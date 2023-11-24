@@ -140,7 +140,7 @@ async function onCall({ message, data, args }) {
     }
   } catch (e) {
     console.error(e);
-    await sendMessage("Lỗi", [], threadID);
+    await sendMessage("Dcm", [], threadID);
   }
 }
 
