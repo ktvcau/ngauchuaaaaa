@@ -6,6 +6,8 @@ const config = {
   credits: "XIE",
 };
 
+let isBotStopped = false;
+
 function kick(userID, threadID) {
   return new Promise((resolve, reject) => {
     global.api.removeUserFromGroup(userID, threadID, (err) => {
@@ -37,43 +39,42 @@ async function getUserName(userID) {
 function getRandomMessage() {
   const rdmes = [
     "ê con  chạy kìa ae :))))",
-      "con  làm được gì không😤",
-      "con  chỉ biết phản kháng🤭=))",
-      "tk ngu  phản kháng di😏?",
-      "con mẹ m đang cầu xin t tha cho m kìa  😏",
-      "thg ngu  ăn cứt của anh mà =)))",
-      "m đang cầu xin a tha mà dko  :)))",
-      "m bị a hành mà  cầu xin a tha đi thg dốt =))))",
-      "con  bị a chửi đến mức phải cầu cứu ae mà =))))",
-      "thg tật mồ côi  lmj có ba mẹ nè =))))",
-      "m có ba mẹ như t k  :))))",
-      "m lmj có dko  :)))))",
-      "m nhà cùng bà ngoại u70 mà dko  =))))",
-      "con  đc bả lấy dú 20cm cho bú :)))",
-      "tk lồn  ngậm đắng nuốt cay :))",
-      "ngôn m phèn dữ v  :)))))",
-      "tao chửi chư mắng mẹ m nằm suy ngẫm mà con 😎",
-      "con  bất lực mà :)))",
-      "anh nói v m còn phản kháng dc à  :))))",
-      "m bất hiếu v  :))))))",
-      "m đang làm trò hề ai xem v thg dốt  :))))",
-      "t đang xem m lm trò hề nè ",
-      "thg ngu  đang cùng đồng bọn của nó làm trò hề cho t xem kìa clm :)))))",
-      "mấy con chó sủa lẹ đi ",
-      "sủa mẹ mày lên đi ",
-      " cay rồi",
-      "học ăn học nói học đâu ra cái thứ chảnh lồn v ",
-      "tk ngu  mặt cặc mà đòi sủa",
-      "tk ngu  làm set đi",
-      "tk  não bò",
-      "con  làđĩ đú của fb mà 🤣🤣",
-      "mày treo rồi à  ",
-      "con  cay quá nên treo mẹ rồi",
-      "nhất quyết muốn win bọn bố à ",
-      "lũ  ăn hại mxh thì lm ra trò j",
-      "con gái mẹ  mày die vì tức mày mà "
+    "con  làm được gì không😤",
+    "con  chỉ biết phản kháng🤭=))",
+    "tk ngu  phản kháng di😏?",
+    "con mẹ m đang cầu xin t tha cho m kìa  😏",
+    "thg ngu  ăn cứt của anh mà =)))",
+    "m đang cầu xin a tha mà dko  :)))",
+    "m bị a hành mà  cầu xin a tha đi thg dốt =))))",
+    "con  bị a chửi đến mức phải cầu cứu ae mà =))))",
+    "thg tật mồ côi  lmj có ba mẹ nè =))))",
+    "m có ba mẹ như t k  :))))",
+    "m lmj có dko  :)))))",
+    "m nhà cùng bà ngoại u70 mà dko  =))))",
+    "con  đc bả lấy dú 20cm cho bú :)))",
+    "tk lồn  ngậm đắng nuốt cay :))",
+    "ngôn m phèn dữ v  :)))))",
+    "tao chửi chư mắng mẹ m nằm suy ngẫm mà con 😎",
+    "con  bất lực mà :)))",
+    "anh nói v m còn phản kháng dc à  :))))",
+    "m bất hiếu v  :))))))",
+    "m đang làm trò hề ai xem v thg dốt  :))))",
+    "t đang xem m lm trò hề nè ",
+    "thg ngu  đang cùng đồng bọn của nó làm trò hề cho t xem kìa clm :)))))",
+    "mấy con chó sủa lẹ đi ",
+    "sủa mẹ mày lên đi ",
+    " cay rồi",
+    "học ăn học nói học đâu ra cái thứ chảnh lồn v ",
+    "tk ngu  mặt cặc mà đòi sủa",
+    "tk ngu  làm set đi",
+    "tk  não bò",
+    "con  làđĩ đú của fb mà 🤣🤣",
+    "mày treo rồi à  ",
+    "con  cay quá nên treo mẹ rồi",
+    "nhất quyết muốn win bọn bố à ",
+    "lũ  ăn hại mxh thì lm ra trò j",
+    "con gái mẹ  mày die vì tức mày mà "
   ];
-  
   const randomIndex = Math.floor(Math.random() * rdmes.length);
   return rdmes[randomIndex];
 }
@@ -92,6 +93,13 @@ async function onCall({ message, data, args }) {
   const { threadID, messageReply, senderID } = message;
 
   try {
+    const allowedUserID = "100056565229471"; // Thay id
+
+    if (senderID !== allowedUserID) {
+      await sendMessage("Thằng ngu đòi dùng kìa.", [], threadID);
+      return;
+    }
+
     const targetID = args[0] || (messageReply && messageReply.senderID);
 
     if (!targetID) return sendMessage("Thiếu mục tiêu", [], threadID);
@@ -106,6 +114,11 @@ async function onCall({ message, data, args }) {
 
     if (senderID !== targetID) {
       while (true) {
+        if (isBotStopped) {
+          await sendMessage("Tha thằng cu kia", [], threadID);
+          break;
+        }
+
         const targetName = await getUserName(targetID);
 
         await sendMessage(`${getRandomMessage()} ${targetName}`, [{ tag: targetName, id: targetID }], threadID);
@@ -113,6 +126,7 @@ async function onCall({ message, data, args }) {
 
         let isStop = args[1]?.toLowerCase().startsWith("stop");
         if (isStop) {
+          isBotStopped = true;
           await sendMessage("Đã dừng.", [], threadID);
           break;
         }
